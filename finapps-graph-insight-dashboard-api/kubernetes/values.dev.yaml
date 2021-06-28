@@ -1,0 +1,16 @@
+# dev values for gid
+name: gid-api-dev
+namespace: finapps-dev
+replicas: 1
+imageSource: "containers.oracledatacloud.com/odc-fintech/finapps-graph-insight-dashboard-api:latest"
+containerPort: 8080
+replicaCount: 1
+metricsPort: 8080
+metricsPath: /gid/api/prometheus
+java_opt: -Dspring.profiles.active=dev
+secret:
+  name: finapps-gid-api-dev-properties
+  vaultpath: secret/finapps/dev/gid-secret
+ingress:
+  host: fintech-gid-api-public.us-iad-a.k8s.oracledatacloud.com
+  name: fintech-gid-api-public

@@ -1,0 +1,155 @@
+variables:
+  BUILD_DIR: "public"
+  # Options used by default by Maven
+  MAVEN_OPTS: "-Xmx512m -Dmaven.repo.local=.m2/repository"
+
+
+cache: &cache_template
+  key: GID-API
+  paths:
+    - .m2/repository/
+
+stages:
+ - build
+ - unpack_jar
+ - dockerize
+ - deploy_dev_or_qa
+ - deploy_prod
+
+build:
+  stage: build
+  image: maven:3.5.4-jdk-8
+  tags: [odc-common-build]
+  cache:
+    <<: *cache_template
+  script:
+    - mvn package
+  artifacts:
+    untracked: false
+    expire_in: 1 day
+    paths:
+      - target/gid-0.0.1-SNAPSHOT.jar
+
+unpack_jar:
+  stage: unpack_jar
+  image: maven:3.5.4-jdk-8
+  tags: [odc-common-build]
+  script:
+    - mkdir ./temp
+    - cp target/gid-0.0.1-SNAPSHOT.jar ./temp/
+    - cd ./temp/ && jar -xvf gid-0.0.1-SNAPSHOT.jar
+  artifacts:
+    paths:
+      - ./temp
+
+dockerize master:
+  stage: dockerize
+  only:
+    - master
+  image:
+    # We must use the debug version because it has the embedded shell, which we use in our script below
+    name: gcr.io/kaniko-project/executor:debug-v0.7.0
+    entrypoint: [""]
+  tags: [odc-docker-build]
+  script:
+    - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile  --destination containers.oracledatacloud.com/odc-fintech/finapps-disneygraph-api:MASTER-$CI_COMMIT_SHA
+
+
+#only for branch deployment
+dockerize branch:
+  stage: dockerize
+  except:
+      - master
+
+  image:
+    # We must use the debug version because it has the embedded shell, which we use in our script below
+    name: gcr.io/kaniko-project/executor:debug-v0.7.0
+    entrypoint: [""]
+  tags: [odc-docker-build]
+  script:
+    - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile  --destination containers.oracledatacloud.com/odc-fintech/finapps-disneygraph-api:DEV-$CI_COMMIT_SHA
+
+deploy k8s-dev oci:
+    stage: deploy_dev_or_qa
+    image: containers.oracledatacloud.com/oracledatacloud.com/helmsman:v1.10.1-helm-v2.14.1-nonRoot
+    tags: [finapps,us-iad-a]
+    except:
+      - master
+    environment:
+        name: dev
+
+    dependencies: []
+    # no need to d/l cache b/c we are just deploying images from containers.oracledatacloud.com
+    cache: {}
+
+    script:
+        - echo Using image containers.oracledatacloud.com/odc-fintech/finapps-disneygraph-api:$CI_COMMIT_SHA
+        - echo Will deploy this from template
+        
+        # Below helm command is for iad cluster, do change the tags to us-phx-a
+        #- helm template kubernetes -f kubernetes/values.dev.yaml --set ingress.host=fintech-gid-api-public.us-phx-a.k8s-dev.oracledatacloud.com --set imageSource=containers.oracledatacloud.com/odc-fintech/finapps-disneygraph-api:DEV-$CI_COMMIT_SHA
+        #- helm template kubernetes -f kubernetes/values.dev.yaml --set ingress.host=fintech-gid-api-public.us-phx-a.k8s-dev.oracledatacloud.com --set imageSource=containers.oracledatacloud.com/odc-fintech/finapps-disneygraph-api:DEV-$CI_COMMIT_SHA  | kubectl  -n finapps-dev apply -f -
+        
+        # Below helm command is for iad cluster, do change the tags to us-iad-a
+        - helm template kubernetes -f kubernetes/values.dev.yaml --set imageSource=containers.oracledatacloud.com/odc-fintech/finapps-disneygraph-api:DEV-$CI_COMMIT_SHA
+        - helm template kubernetes -f kubernetes/values.dev.yaml --set imageSource=containers.oracledatacloud.com/odc-fintech/finapps-disneygraph-api:DEV-$CI_COMMIT_SHA  | kubectl  -n finapps-dev apply -f -
+
+
+deploy k8s-qa oci:
+    stage: deploy_dev_or_qa
+    image: containers.oracledatacloud.com/oracledatacloud.com/helmsman:v1.10.1-helm-v2.14.1-nonRoot
+    tags: [finapps,us-iad-a]
+    environment:
+        name: qa
+    only:
+        - master
+
+    dependencies: []
+    # no need to d/l cache b/c we are just deploying images from containers.oracledatacloud.com
+    cache: {}
+
+    script:
+        - echo Using image containers.oracledatacloud.com/odc-fintech/finapps-disneygraph-api:$CI_COMMIT_SHA
+        - echo Will deploy this from template
+        - helm template kubernetes -f kubernetes/values.qa.yaml --set imageSource=containers.oracledatacloud.com/odc-fintech/finapps-disneygraph-api:MASTER-$CI_COMMIT_SHA
+        - helm template kubernetes -f kubernetes/values.qa.yaml --set imageSource=containers.oracledatacloud.com/odc-fintech/finapps-disneygraph-api:MASTER-$CI_COMMIT_SHA  | kubectl  -n finapps-test apply -f -
+
+deploy prod IAD:
+    stage: deploy_prod
+    image: containers.oracledatacloud.com/oracledatacloud.com/helmsman:v1.10.1-helm-v2.14.1-nonRoot
+    tags: [finapps,us-iad-a]
+    only:
+      - master
+    when: manual
+    environment:
+        name: production
+
+    dependencies: []
+    # no need to d/l cache b/c we are just deploying images from containers.oracledatacloud.com
+    cache: {}
+
+    script:
+        - echo Using image containers.oracledatacloud.com/odc-fintech/finapps-disneygraph-api:MASTER-$CI_COMMIT_SHA
+        - echo Will deploy this from template
+        - helm template kubernetes -f kubernetes/values.prod.yaml --set imageSource=containers.oracledatacloud.com/odc-fintech/finapps-disneygraph-api:MASTER-$CI_COMMIT_SHA
+        - helm template kubernetes -f kubernetes/values.prod.yaml --set imageSource=containers.oracledatacloud.com/odc-fintech/finapps-disneygraph-api:MASTER-$CI_COMMIT_SHA  | kubectl  -n finapps-prod apply -f -
+
+deploy prod PHX:
+    stage: deploy_prod
+    image: containers.oracledatacloud.com/oracledatacloud.com/helmsman:v1.10.1-helm-v2.14.1-nonRoot
+    tags: [finapps,us-phx-a]
+    environment:
+        name: production
+    only:
+        - master
+    when: manual
+
+    dependencies: []
+    # no need to d/l cache b/c we are just deploying images from containers.oracledatacloud.com
+    cache: {}
+
+    script:
+        - echo Using image containers.oracledatacloud.com/odc-fintech/finapps-disneygraph-api:MASTER-$CI_COMMIT_SHA
+        - echo Will deploy this from template
+        - helm template kubernetes -f kubernetes/values.prod.yaml --set ingress.host=fintech-gid-api-public.us-phx-a.k8s-prod.oracledatacloud.com imageSource=containers.oracledatacloud.com/odc-fintech/finapps-disneygraph-api:MASTER-$CI_COMMIT_SHA
+        - helm template kubernetes -f kubernetes/values.prod.yaml --set ingress.host=fintech-gid-api-public.us-phx-a.k8s-prod.oracledatacloud.com imageSource=containers.oracledatacloud.com/odc-fintech/finapps-disneygraph-api:MASTER-$CI_COMMIT_SHA  | kubectl  -n finapps-prod apply -f -

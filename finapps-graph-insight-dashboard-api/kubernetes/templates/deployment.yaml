@@ -1,0 +1,35 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: {{ .Values.name }}
+  namespace: {{ .Values.namespace }}
+spec:
+   replicas: 1
+   template:
+     metadata:
+       labels:
+         app: {{ .Values.name }}
+       annotations:
+        prometheus.io/scrape: 'true'
+        prometheus.io/port: '{{.Values.metricsPort}}'
+        prometheus.io/path: {{.Values.metricsPath}}
+
+     spec:
+       containers:
+         - name: {{ .Values.name }}
+           image: {{ .Values.imageSource}}
+           ports:
+             - containerPort: {{ .Values.containerPort }}
+           env:
+             - name: JAVA_OPTIONS
+               value: {{ .Values.java_opt | quote}}
+           securityContext:
+               runAsUser: 1000 
+           volumeMounts:
+            - name: {{ .Values.name | printf "%s-properties-vol" }}
+              mountPath: "/appdir"
+              readOnly: true     
+       volumes:
+         - name: {{ .Values.name | printf "%s-properties-vol" }}
+           secret:
+            secretName: {{ .Values.secret.name }}

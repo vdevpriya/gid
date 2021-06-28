@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>com.oracledatacloud.finapps</groupId>
+	<artifactId>gid</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<packaging>jar</packaging>
+
+	<name>gid</name>
+	<description>Graph Insight Dashboard</description>
+
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>1.5.8.RELEASE</version>
+		<relativePath /> <!-- lookup parent from repository -->
+	</parent>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<java.version>1.8</java.version>
+		<m2eclipse.wtp.contextRoot>/gid/api</m2eclipse.wtp.contextRoot>
+	</properties>
+
+	<repositories>
+		<repository>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+			<id>odc</id>
+			<name>odc-release</name>
+			<url>https://bin.oracledatacloud.com/artifactory/odc-release</url>
+		</repository>
+	</repositories>
+
+	<distributionManagement>
+		<repository>
+			<id>central</id>
+			<name>bin.oracledatacloud.com-release</name>
+			<url>https://bin.oracledatacloud.com/artifactory/odc-release</url>
+		</repository>
+		<snapshotRepository>
+			<id>snapshots</id>
+			<name>bin.oracledatacloud.com-snapshots</name>
+			<url>https://bin.oracledatacloud.com/artifactory/odc-snapshots</url>
+		</snapshotRepository>
+	</distributionManagement>
+	<scm>
+		<connection>scm:git:git@gitlab.oracledatacloud.com:odc-fintech/finapps-graph-insight-dashboard-api.git</connection>
+		<developerConnection>scm:git:git@gitlab.oracledatacloud.com:odc-fintech/finapps-graph-insight-dashboard-api.git</developerConnection>
+		<url>https://gitlab.oracledatacloud.com/odc-fintech/finapps-graph-insight-dashboard-api.git</url>
+		<tag>HEAD</tag>
+	</scm>
+
+
+	<dependencies>
+	<dependency>
+			<groupId>io.springfox</groupId>
+			<artifactId>springfox-swagger-ui</artifactId>
+			<version>2.6.1</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>io.springfox</groupId>
+			<artifactId>springfox-swagger2</artifactId>
+			<version>2.6.1</version>
+			<scope>compile</scope>
+		</dependency> 
+	 <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-starter-logging</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jpa</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-tomcat</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.google.code.gson</groupId>
+			<artifactId>gson</artifactId>
+			<version>2.8.2</version>
+		</dependency>
+		<!-- <dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>1.2.16</version>
+		</dependency> -->
+		<dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-log4j</artifactId>
+      <version>1.2.5.RELEASE</version>
+    </dependency>
+		<dependency>
+			<groupId>com.oracle</groupId>
+			<artifactId>ojdbc7</artifactId>
+			<version>12.1.0.2</version>
+		</dependency>
+		<!-- <dependency> <groupId>com.datalogix.ses</groupId> <artifactId>aaa-authnz-svc-client</artifactId> 
+			<version>3.2.1-9</version> <exclusions> <exclusion> <groupId>com.fasterxml.jackson.core</groupId> 
+			<artifactId>*</artifactId> </exclusion> <exclusion> <groupId>com.datalogix.common</groupId> 
+			<artifactId>*</artifactId> </exclusion> </exclusions> </dependency> -->
+
+		<!-- <dependency> -->
+		<!-- <groupId>tomcat</groupId> -->
+		<!-- <artifactId>tomcat-util</artifactId> -->
+		<!-- <version>5.5.23</version> -->
+		<!-- </dependency> -->
+		<dependency>
+			<groupId>commons-codec</groupId>
+			<artifactId>commons-codec</artifactId>
+			<version>1.10</version>
+		</dependency>
+		<!-- <dependency> <groupId>org.hibernate.javax.persistence</groupId> <artifactId>hibernate-jpa-2.1-api</artifactId> 
+			<version>1.0.0.Final</version> </dependency> -->
+			
+			<dependency>
+			<groupId>io.micrometer</groupId>
+			<artifactId>micrometer-spring-legacy</artifactId>
+			<version>1.0.3</version>
+		</dependency>
+
+		<dependency>
+			<groupId>io.micrometer</groupId>
+			<artifactId>micrometer-registry-prometheus</artifactId>
+			<version>1.0.3</version>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+			<!-- <plugin>
+				<artifactId>maven-war-plugin</artifactId>
+				<version>2.4</version>
+				<executions>
+					<execution>
+						<id>default-war</id>
+						<phase>package</phase>
+						<goals>
+							<goal>war</goal>
+						</goals>
+						<configuration>
+							<warSourceDirectory>WebContent</warSourceDirectory>
+							<failOnMissingWebXml>false</failOnMissingWebXml>
+							<archive>
+								<manifest>
+									<addClasspath>true</addClasspath>
+								</manifest>
+							</archive>
+						</configuration>
+					</execution>
+				</executions>
+				<configuration>
+					<warSourceDirectory>WebContent</warSourceDirectory>
+					<failOnMissingWebXml>false</failOnMissingWebXml>
+					<archive>
+						<manifest>
+							<addClasspath>true</addClasspath>
+						</manifest>
+					</archive>
+				</configuration>
+			</plugin> -->
+		</plugins>
+	</build>
+
+
+</project>

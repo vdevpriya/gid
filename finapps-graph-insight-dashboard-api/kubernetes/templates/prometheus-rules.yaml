@@ -1,0 +1,29 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ .Values.name }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: prometheus-operator
+    release: prometheus-operator
+spec:
+  groups:
+  - name: {{ .Values.name }}
+    rules:
+    - alert: {{ printf "%s:ServiceDown" .Values.name }}
+      annotations:
+        summary: {{ printf "%s service appears to be completely down" .Values.name }}
+      expr: {{ printf "(sum(up{job=\"%s/%s\"}) == 0 or absent{job=\"%s/%s\"} == 1)"  .Values.namespace .Values.name .Values.namespace .Values.name }}
+      for: 2m
+      labels:
+        notify: techfinapps_slack
+        severity: critical
+    - alert: {{ printf "%s:Error" .Values.name }}
+      annotations: 
+        summary: {{ printf "Some response other than 200 occurred in %s" .Values.name }}
+      expr: {{ printf "increase(http_server_requests_seconds_count{container_name=\"%s\", status!~\"200\"}[15m]) >1" .Values.name }}
+      for: 2m
+      labels:
+        notify: finapps_slack
+        severity: critical      
+  

@@ -1,0 +1,9 @@
+name: gid-api
+description: Spring boot service providing REST API for Graph Insight Dashboard
+version: 0.0.0
+home: "https://gitlab.oracledatacloud.com/odc-fintech/finapps-graph-insight-dashboard-api"
+sources:
+  - "https://gitlab.oracledatacloud.com/odc-fintech/finapps-graph-insight-dashboard-api"
+maintainers:
+  - name: Amit Saxena
+    email: amit.as.saxena@oracle.com
